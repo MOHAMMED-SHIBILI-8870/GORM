@@ -58,6 +58,24 @@ func GetContactsByID(c *gin.Context){
 	c.JSON(200,contacts)
 }
 
+func GetContactsByName(c *gin.Context){
+	name:=c.Param("name")
+
+	var contacts []models.Contact
+
+	result:=config.DB.Where("name = ?",name).Find(&contacts)
+
+	if result.RowsAffected == 0{
+		c.JSON(http.StatusNotFound,gin.H{
+			"error":"no users found",
+		})
+		return
+	}
+
+	c.JSON(200,contacts)
+
+}
+
 func UpdateContact(c *gin.Context){
 	id := c.Param("id")
 

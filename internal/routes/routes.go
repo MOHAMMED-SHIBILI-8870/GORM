@@ -12,4 +12,5 @@ func Routes(r *gin.Engine) {
 	r.GET("/contacts/:id",handler.GetContactsByID)
 	r.PATCH("contacts/:id",handler.UpdateContact)
 	r.DELETE("/contacts/:id",handler.DeleteContact)
+	r.GET("/contacts/name/:name",handler.GetContactsByName)
 }
