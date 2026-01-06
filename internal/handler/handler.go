@@ -9,81 +9,82 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateContact(c *gin.Context){
+func CreateContact(c *gin.Context) {
 	var Contact models.Contact
 
-	if err:=c.ShouldBindJSON(&Contact);err != nil{
+	if err:=c.ShouldBindJSON(&Contact);err!=nil{
 		c.JSON(http.StatusBadRequest,gin.H{
 			"error":err.Error(),
 		})
 		return
 	}
-	if err :=config.DB.Create(&Contact).Error;err!=nil{
+
+	if err:=config.DB.Create(&Contact).Error;err!=nil{
 		c.JSON(http.StatusInternalServerError,gin.H{
 			"error":err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusCreated,gin.H{
-		"msg":"contact created successfully",
-		"contacs":Contact,
+	c.JSON(200,gin.H{
+		"data":Contact,
+		"msg":"Data's are created successflly",
 	})
 }
 
 func GetContacts(c *gin.Context){
 	var contacts []models.Contact
 
-	config.DB.Find(&contacts)
-	c.JSON(200,contacts)
+	 config.DB.Find(&contacts)
+	 c.JSON(200,contacts)
 }
 
 func GetContactsByID(c *gin.Context){
 	idparams:=c.Param("id")
 	id,err:=strconv.Atoi(idparams)
-	if err != nil{
-		c.JSON(http.StatusBadRequest,gin.H{
-			"error":"Invalid ID",
+	if err!=nil{
+		c.JSON(400,gin.H{
+			"error":"Invalid id",
 		})
 		return
 	}
-	
-	var contacts models.Contact
-	if err:=config.DB.First(&contacts,id).Error;err != nil{
+
+	var Contact models.Contact
+
+	if err:=config.DB.First(&Contact,id).Error;err!=nil{
 		c.JSON(404,gin.H{
-			"error":"user not found",
+			"error":"User not found",
 		})
 		return
 	}
-	c.JSON(200,contacts)
+
+	c.JSON(200,Contact)
 }
 
 func GetContactsByName(c *gin.Context){
-	name:=c.Param("name")
+	name := c.Param("name")
+	
+	var contact models.Contact
 
-	var contacts []models.Contact
-
-	result:=config.DB.Where("name = ?",name).Find(&contacts)
-
-	if result.RowsAffected == 0{
-		c.JSON(http.StatusNotFound,gin.H{
-			"error":"no users found",
+	if err:=config.DB.Where("name = ?",name).First(&contact).Error;
+	err != nil{
+		c.JSON(404,gin.H{
+			"error":"User not found",
 		})
 		return
 	}
 
-	c.JSON(200,contacts)
-
+	c.JSON(200,contact)
 }
 
-func UpdateContact(c *gin.Context){
-	id := c.Param("id")
+func PutContact(c *gin.Context){
+	id:=c.Param("id")
 
 	var contact models.Contact
 
-	if err:=config.DB.First(&contact,id).Error;err != nil{
-		c.JSON(404,gin.H{
-			"error":"record not found",
+	if err:=config.DB.First(&contact,id).Error;err!=nil{
+		c.JSON(http.StatusNotFound,gin.H{
+			"error":"Record not found",
 		})
 		return
 	}
@@ -97,35 +98,77 @@ func UpdateContact(c *gin.Context){
 		return
 	}
 
-	contact.Name=input.Name
-	contact.Email=input.Email
-	contact.Phone=input.Phone
-
-	if err:=config.DB.Save(&contact).Error;err!=nil{
+	if err:= config.DB.Model(&contact).Updates(models.Contact{
+		Name: input.Name,
+		Email: input.Email,
+		Phone: input.Phone,
+	}).Error;err!=nil{
 		c.JSON(http.StatusInternalServerError,gin.H{
 			"error":err.Error(),
 		})
 		return
 	}
 
-	c.JSON(200,gin.H{
+	c.JSON(http.StatusOK,gin.H{
+		"msg":"Updated Successfully",
+		"data":contact,
+	})
+}
+
+func PatchContact(c *gin.Context){
+	id:= c.Param("id")
+
+	var contact models.Contact
+
+	if err:=config.DB.First(&contact,id).Error;err !=nil{
+		c.JSON(http.StatusNotFound,gin.H{
+			"error":"Record not Found",
+		})
+		return
+	}
+
+	var input models.PatchContactInput
+	if err:=c.ShouldBindJSON(&input);err!=nil{
+		c.JSON(http.StatusBadRequest,gin.H{
+			"error":err.Error(),
+		})
+		return
+	}
+	if err:= config.DB.Model(&contact).Updates(input).Error;err!=nil{
+		c.JSON(http.StatusInternalServerError,gin.H{
+			"error":err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK,gin.H{
+		"msg":"Updated successfully",
 		"data":contact,
 	})
 }
 
 func DeleteContact(c *gin.Context){
-	id := c.Param("id")
+	id:=c.Param("id")
 
-	var contact models.Contact
+	var  contact models.Contact
 
-	if err:=config.DB.First(&contact,id).Error;err!=nil{
-		c.JSON(http.StatusBadRequest,gin.H{
-			"msg":"Record not found",
+	result:=config.DB.Delete(&contact,id)
+
+	if result.Error != nil{
+		c.JSON(http.StatusInternalServerError,gin.H{
+			"error":result.Error.Error(),
 		})
 		return
 	}
-	config.DB.Delete(&contact)
+
+	if result.RowsAffected == 0{
+		c.JSON(http.StatusNotFound,gin.H{
+			"message":"contact not found",
+		})
+		return
+	}
+
 	c.JSON(200,gin.H{
-		"msg":"Deleted successfuly",
+		"msg":"Deleted successfully",
 	})
 }

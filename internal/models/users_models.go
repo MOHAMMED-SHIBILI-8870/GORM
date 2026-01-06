@@ -6,3 +6,8 @@ type Contact struct {
 	Email string `gorm:"unique" json:"email" binding:"required,email"`
 	Phone string `json:"ph_no" binding:"required"`
 }
+type PatchContactInput struct {
+	Name  *string `json:"name"`
+	Email *string `json:"email" binding:"omitempty,email"`
+	Phone *string `json:"ph_no"`
+}

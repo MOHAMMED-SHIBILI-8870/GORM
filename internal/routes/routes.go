@@ -7,10 +7,12 @@ import (
 )
 
 func Routes(r *gin.Engine) {
-	r.POST("/contacts",handler.CreateContact)
-	r.GET("/contacts",handler.GetContacts)
-	r.GET("/contacts/:id",handler.GetContactsByID)
-	r.PATCH("contacts/:id",handler.UpdateContact)
-	r.DELETE("/contacts/:id",handler.DeleteContact)
-	r.GET("/contacts/name/:name",handler.GetContactsByName)
+
+	r.POST("/contacts/post",handler.CreateContact)
+	r.GET("/contacts/get",handler.GetContacts)
+	r.GET("/contacts/get/:id",handler.GetContactsByID)
+	r.GET("/contacts/get/name/:name",handler.GetContactsByName)
+	r.PUT("/contacts/put/:id",handler.PutContact)
+	r.PATCH("/contacts/patch/:id",handler.PatchContact)
+	r.DELETE("/contacts/delete/:id",handler.DeleteContact)
 }

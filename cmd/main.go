@@ -9,15 +9,12 @@ import (
 )
 
 func main() {
-	r:=gin.Default()
-
-
+	
 	config.ConnectDB()
 	config.DB.AutoMigrate(&models.Contact{})
 
-
+	r := gin.Default()
 	routes.Routes(r)
 
 	r.Run(":8080")
-
 }
